@@ -16,11 +16,11 @@ export async function createTrip(app: FastifyInstance) {
         ends_at: z.coerce.date(),
         owner_name: z.string(),
         owner_email: z.string().email(),
-        emails_to_invite: z.array(z.string().email())
+        participants_to_invite: z.array(z.tuple([z.string(), z.string().email()]))
       })
     }
   }, async (request) => {
-    const { destination, starts_at, ends_at, owner_name, owner_email, emails_to_invite  } = request.body
+    const { destination, starts_at, ends_at, owner_name, owner_email, participants_to_invite  } = request.body
 
     if (dayjs(starts_at).isBefore(new Date())){
       
@@ -45,8 +45,8 @@ export async function createTrip(app: FastifyInstance) {
                 is_owner: true,
                 is_confirmed: true,
               },
-              ...emails_to_invite.map(email => {
-                return { email }
+              ...participants_to_invite.map(([name, email]) => {
+                return { name, email }
               })
             ],
           }
@@ -73,6 +73,8 @@ export async function createTrip(app: FastifyInstance) {
 
     console.log(nodemailer.getTestMessageUrl(message))
 
-    return { tripId: trip.id }
+    return { 
+      message: "Trip Created",
+      tripId: trip.id }
   })
 }
