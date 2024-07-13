@@ -1,10 +1,10 @@
+import dayjs from "dayjs";
 import { FastifyInstance } from "fastify";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
-import { z } from "zod";
-import dayjs from "dayjs";
 import nodemailer from "nodemailer";
-import { prisma } from "../lib/prisma";
-import { getMailClient } from "../lib/mail";
+import { z } from "zod";
+import { getMailClient } from "../../lib/mail";
+import { prisma } from "../../lib/prisma";
 
 
 export async function createTrip(app: FastifyInstance) {
@@ -23,10 +23,9 @@ export async function createTrip(app: FastifyInstance) {
     const { destination, starts_at, ends_at, owner_name, owner_email, participants_to_invite  } = request.body
 
     if (dayjs(starts_at).isBefore(new Date())){
-      
       throw new Error("Invalid Start Time")
+
     }else if (dayjs(ends_at).isBefore(starts_at)){
-      
       throw new Error("Invalid End Time")
     }
 
@@ -73,8 +72,6 @@ export async function createTrip(app: FastifyInstance) {
 
     console.log(nodemailer.getTestMessageUrl(message))
 
-    return { 
-      message: "Trip Created",
-      tripId: trip.id }
+    return { tripId: trip.id }
   })
 }
