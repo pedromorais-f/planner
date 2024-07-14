@@ -4,6 +4,8 @@ import nodemailer from "nodemailer";
 import { z } from "zod";
 import { getMailClient } from "../../lib/mail";
 import { prisma } from "../../lib/prisma";
+import { ClientError } from "../../errors/client-error";
+import { env } from "../../env";
 
 
 export async function confirmTrip(app: FastifyInstance) {
@@ -31,7 +33,7 @@ export async function confirmTrip(app: FastifyInstance) {
     })
 
     if (!trip){
-      throw new Error("Trip was not found!")
+      throw new ClientError("Trip was not found!")
     } else if (trip.is_confirmed){
       return "Trip already Confirmed!"
     }
@@ -51,7 +53,7 @@ export async function confirmTrip(app: FastifyInstance) {
     await Promise.all(
       trip.participants.map(async (participant) => {
         
-        const confirmationLink = `http://localhost:8080/participants/${participant.id}/confirm`
+        const confirmationLink = `${env.API_BASE_URL}/participants/${participant.id}/confirm`
         
         const message = await mail.sendMail({
           from: {

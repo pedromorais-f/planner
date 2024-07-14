@@ -5,39 +5,29 @@ import { prisma } from "../../lib/prisma";
 import { ClientError } from "../../errors/client-error";
 
 
-export async function confirmParticipant(app: FastifyInstance) {
+export async function getParticipant(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().get(
-    "/participants/:participantId/confirm", {
+    "/participants/:participantId", {
     schema: {
       params: z.object({
         participantId: z.string().uuid()
       })
     }
-  }, 
-  async (request) => {
+  }, async (request) => {
     const { participantId } = request.params
-    
+
     const participant = await prisma.participant.findUnique({
       where: {
         id: participantId
       }
     })
-    
+
     if (!participant) {
-      throw new ClientError("Participant not Found!")
-    } else if (participant.is_confirmed){
-      return "You are already confirmed in this trip!"
+      throw new ClientError("Participant was not found")
+
     }
 
-    await prisma.participant.update({
-      where: {
-        id: participantId
-      },
-      data: {
-        is_confirmed: true
-      }
-    })
 
-    return "Presence Confirmed!"
+    return { participant: participant }
   })
 }
